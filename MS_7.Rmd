@@ -1,0 +1,52 @@
+---
+title: "MS7"
+author: "JBR"
+date: "4/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(infer)
+library(readxl)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(tidyr)
+library(tidyverse)
+library(purrr)
+library(tibble)
+library(stringr)
+library(forcats)
+library(ggthemes)
+library(janitor)
+library(knitr)
+library(gapminder)
+
+
+```
+
+
+```{r, include = TRUE}
+
+
+ms_5 <- gapminder %>%
+  filter(continent == "Americas")
+
+
+ms_6_plot <- ms_5%>%
+ggplot(ms_5, mapping = aes(year, gdpPercap, color = country))+
+geom_line()+
+facet_wrap(~ continent)+
+theme_fivethirtyeight()+
+labs(x = "Year",
+     y = "GDP per Capita",
+     title = "GDP per Capita of Countries on American Continent",
+     subtitle = "by year")
+
+ggsave("ms_6_plot.png",
+       plot = last_plot(), path = "ms_6_shiny/")
+
+
+
+```

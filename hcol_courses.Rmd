@@ -1,0 +1,267 @@
+---
+title: "hcol_courses"
+author: "JBR"
+date: "4/20/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+
+library(broom)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+library(gt)
+library(ggplot2)
+library(infer)
+library(forcats)
+library(purrr)
+library(skimr)
+library(readr)
+library(readxl)
+library(janitor)
+library(ggthemes)
+
+
+spring_2016 <- read_xlsx("ENROLLMENT/spring_2016.xlsx")%>%
+  clean_names()
+
+spring_2017 <- read_xlsx("ENROLLMENT/spring_2017.xlsx")%>%
+  clean_names()
+
+spring_2018 <- read_xlsx("ENROLLMENT/spring_2018.xlsx")%>%
+  clean_names()
+
+spring_2019<- read_xlsx("ENROLLMENT/spring_2019.xlsx", skip = 3)%>%
+  clean_names()
+
+spring_2020 <- read_xlsx("ENROLLMENT/spring_2020.xlsx")%>%
+  clean_names()
+
+fall_2016 <- read_xlsx("ENROLLMENT/fall_2016.xlsx")%>%
+  clean_names()
+
+fall_2017 <- read_xlsx("ENROLLMENT/fall_2017.xlsx", skip = 3)%>%
+  clean_names()
+
+fall_2018 <- read_xlsx("ENROLLMENT/fall_2018.xlsx", skip = 2)%>%
+  clean_names()
+
+fall_2019 <- read_xlsx("ENROLLMENT/fall_2019.xlsx", skip = 3)%>%
+  clean_names()
+
+
+```
+
+Basic summary analysis: 
+- What are the biggest courses? 
+- What are the biggest departments?
+
+
+```{r}
+
+# This chunk seeks to answer: What were the biggest courses for the 2019-2020 Academic Year?
+
+ay_1920 <- spring_2020%>%
+  full_join(fall_2019)%>%
+  slice(1:5244)%>%
+  filter(course_id != "Grand Total")
+
+top_10_ay_1920 <- ay_1920 %>%
+  arrange(desc(u_grad))%>%
+  slice(2:11)
+
+top_10_ay_1920 %>%
+  select(course_id, course_title, course_name, course_department, instructor_full_name, u_grad)%>%
+  gt()%>%
+  tab_header(
+    title= "10 Biggest Courses During AY 19-20"
+  )%>%
+  cols_label(course_id = "Course ID",
+             course_title = "Course Title",
+             course_name = "Name",
+             course_department = "Department",
+             instructor_full_name = "Instructor",
+             u_grad = "Undergrads")
+
+```
+
+
+```{r}
+# This chunk seeks to visualize the % of undergrad 
+# students enrolled in the "big 10" at any time. 
+
+# summarizing for big 10 enrollment
+
+top_10_ay_1920 %>%
+  summarize(ug_big10 = sum(u_grad))
+
+# 4689 in big 10 for ay1920
+
+# summarizing for total enrollment 
+# (not STUDENTS but STUDENTS in CLASSES 
+# so will by much larger than amount of students)
+
+ay_1920 %>%
+  summarize(ay_stu = sum(u_grad))%>%
+  view()
+
+# 52389
+
+# 4689/52389 yields 0.08950,
+# so it looks like 9% 
+# of the student body
+# is taking or has taken  one of the 
+# top 10 enrolled classes for AY19-20.
+
+# now i'm going to create a two-level factor
+# for big 10 or non big 10, so i can stack
+# the bar_chart and fill by that factor
+
+big_10_plot <- ay_1920 %>%
+  arrange(desc(u_grad))%>%
+  filter(course_id != "Grand Total")%>%
+  mutate(big_10 = ifelse(u_grad > 266, TRUE, FALSE))%>%
+  mutate(big_10 = as.factor(big_10)) 
+  
+# SIMPLE IS BEST
+# PERCENT OF STUDENT IN BIG 10 
+
+
+big_10_plot %>%
+  ggplot(aes(x = 1, y = u_grad, fill = big_10))+
+  geom_bar(position = "stack", stat = "identity")+
+  scale_x_discrete()+
+  annotate("text", x = 1, y = 2400, label = "9%")+
+annotate("text", x = 1, y = 27000, label = "91%")+
+  xlab("")+
+  ylab("Total Students")+
+  labs(title = "% of Course Enrollments during AY 19-20", 
+       fill = "Big 10 Class")+
+  theme_fivethirtyeight()
+  
+    
+  
+
+  
+```
+
+```{r}
+# This seeks to find the biggest departments in AY19-20
+
+# by total enrollment in classes
+
+departments_ay1920 <- ay_1920 %>%
+  group_by(course_department)%>%
+  summarize(dept_enrollments = sum(u_grad))%>%
+  filter(dept_enrollments != 0 & course_department != "General Education")
+
+# rank depts by enrollment
+
+depts_ranked_ay1920 <- departments_ay1920 %>%
+  arrange(desc(dept_enrollments)) 
+
+# create gtable
+depts_ranked_ay1920%>%
+  slice(1:10)%>%
+  gt()%>%
+    tab_header(title = "Total Amount of Enrollments in Courses by Department")%>%
+    cols_label(course_department = "Department",
+         dept_enrollments = "Enrollments")
+
+
+```
+
+
+```{r}
+# graph 
+depts_ranked_ay1920 %>%
+  arrange(desc(dept_enrollments))%>%
+  slice(1:10)%>%
+ ggplot(aes(x = course_department, y = dept_enrollments, fill = course_department))+
+  geom_bar(position = "stack", stat = "identity")+
+  scale_x_discrete()+
+  theme(axis.text.x = element_text(angle = 70, hjust = 1))+
+  labs(title = "Total Enrollments in Top 10 Departments")+
+  xlab("")+
+  ylab("Total Enrollments")
+```
+
+Temporal Summary Analysis: 
+- What are the fastest growing departments from the last 4 years?
+
+```{r}
+# in order to pull this off, I need to create AY 
+# for the last 4 years. 
+# luckily, I already have one of them (AY1920)
+
+# creating AY_1819
+
+ay_1819 <- spring_2019%>%
+  full_join(fall_2018)%>%
+  slice(1:5182)%>%
+  filter(course_id != "Grand Total")
+
+# refining departments 
+departments_ay1819 <- ay_1819 %>%
+  group_by(course_department)%>%
+  summarize(dept_enrollments = sum(u_grad))%>%
+  filter(dept_enrollments != 0 & course_department != "General Education")
+
+# creating growth 
+
+depts_18_to20 <- departments_ay1819 %>%
+  full_join(departments_ay1920, by = "course_department", suffix = c("18", "19"))
+
+# growth in integer and percent 
+
+growth_1819 <- depts_18_to20 %>%
+  mutate(growth_1819_pct = ((dept_enrollments19 - dept_enrollments18)/dept_enrollments18),
+         growth_1819 = (dept_enrollments19 - dept_enrollments18))
+
+# PROCEDURAL THINGS 
+# 1. CREATE AY 2017-2018 DEPTS AND JOIN 
+# MEAN ANNUAL CHANGE IN ENROLLMENT GRAPH
+# 2. CREATE A NEW GROUPING AND MAKE 
+# IT FOR COURSE COUNT
+
+ay_1819 <- spring_2019%>%
+  full_join(fall_2018)%>%
+  slice(1:5182)%>%
+  filter(course_id != "Grand Total")
+
+ay_1718 <- spring_2018 %>%
+  full_join(fall_2017)%>%
+  filter(course_id != "Grand Total")%>%
+  slice(1:5040)
+
+# refining departments 
+departments_ay1718 <- ay_1718 %>%
+  group_by(course_department)%>%
+  summarize(dept_enrollments = sum(u_grad))%>%
+  filter(dept_enrollments != 0 & course_department != "General Education")
+
+# creating growth 
+
+depts_17_to20 <- departments_ay1718 %>%
+  full_join(depts_18_to20, by = "course_department")%>%
+  rename(dept_enrollments17 = dept_enrollments)
+
+# growth in integer and percent 
+
+growth_1718 <- depts_17_to20 %>%
+  mutate(growth_1718_pct = ((dept_enrollments18 - dept_enrollments17)/dept_enrollments17),
+         growth_1718 = (dept_enrollments18 - dept_enrollments17))
+
+growth_17_to_19 <- growth_1718 %>%
+  right_join(growth_1819)
+
+```
+
+
+
+
+
+

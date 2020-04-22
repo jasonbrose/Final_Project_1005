@@ -57,7 +57,10 @@ fall_2019 <- read_xlsx("ENROLLMENT/fall_2019.xlsx", skip = 3)%>%
 
 Basic summary analysis: 
 - What are the biggest courses? 
+    - Enrollment?
 - What are the biggest departments?
+    - Enrollment?
+    - Course Count? 
 
 
 ```{r}
@@ -71,7 +74,7 @@ ay_1920 <- spring_2020%>%
 
 top_10_ay_1920 <- ay_1920 %>%
   arrange(desc(u_grad))%>%
-  slice(2:11)
+  slice(1:10)
 
 top_10_ay_1920 %>%
   select(course_id, course_title, course_name, course_department, instructor_full_name, u_grad)%>%
@@ -86,7 +89,11 @@ top_10_ay_1920 %>%
              instructor_full_name = "Instructor",
              u_grad = "Undergrads")
 
+
 ```
+
+ADDITIONAL THINGS IT WOULD BE INTERESTING TO DO: FIND AVERAGE COURSE SIZE
+
 
 
 ```{r}
@@ -167,7 +174,8 @@ depts_ranked_ay1920 <- departments_ay1920 %>%
 depts_ranked_ay1920%>%
   slice(1:10)%>%
   gt()%>%
-    tab_header(title = "Total Amount of Enrollments in Courses by Department")%>%
+    tab_header(title = "Total Amount of Enrollments in Courses by Department",
+               subtitle = "AY 1920")%>%
     cols_label(course_department = "Department",
          dept_enrollments = "Enrollments")
 
@@ -184,7 +192,7 @@ depts_ranked_ay1920 %>%
   geom_bar(position = "stack", stat = "identity")+
   scale_x_discrete()+
   theme(axis.text.x = element_text(angle = 70, hjust = 1))+
-  labs(title = "Total Enrollments in Top 10 Departments")+
+  labs(title = "Total Enrollments in Top 10 Departments", fill = "Department")+
   xlab("")+
   ylab("Total Enrollments")
 ```
@@ -257,6 +265,27 @@ growth_1718 <- depts_17_to20 %>%
 
 growth_17_to_19 <- growth_1718 %>%
   right_join(growth_1819)
+
+# creating mean growth over three years
+
+mean_growth_3y <- growth_17_to_19%>%
+  na.omit()%>%
+  mutate(mean_growth_enrollment = (growth_1718 + growth_1819)/2,
+            mean_growth_pct = (growth_1819_pct + growth_1819_pct)/2)
+
+mean_growth_3y %>%
+  arrange(desc(mean_growth_pct))%>%
+  slice(1:10)%>%
+  ggplot(aes(course_department, mean_growth_pct, fill = course_department))+
+    geom_bar(position = "stack", stat = "identity")+
+    scale_x_discrete()+
+    theme(axis.text.x = element_text(angle = 70, hjust = 1))+
+    labs(title = "Average Growth Rate of Top 10 Departments",
+         subtitle = "(in terms of enrollment)",
+         fill = "Department")+
+    xlab("")+
+    ylab("% growth")
+
 
 ```
 

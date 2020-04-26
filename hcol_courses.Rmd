@@ -89,6 +89,8 @@ top_10_ay_1920 %>%
              instructor_full_name = "Instructor",
              u_grad = "Undergrads")
 
+write_rds(top_10_ay_1920, "top_10_courses.rds")
+
 
 ```
 
@@ -220,7 +222,7 @@ depts_ranked_ay1920 %>%
   xlab("")+
   ylab("Total Enrollments")
 
-
+write_rds(depts_ranked_ay1920, "top_10_depts_e.rds")
 
 ```
 
@@ -269,7 +271,7 @@ dept_cc1920 %>%
 
 ```{r GGPLOT}
 
-dept_cc1920 %>%
+dept_cc1920_sa <- dept_cc1920 %>%
   arrange(desc(course_count))%>%
   slice(1:15)%>%
     ggplot(aes(course_department, course_count, fill = course_department))+
@@ -281,10 +283,10 @@ dept_cc1920 %>%
   xlab("")+
   ylab("Total Courses")
 
-ggsave("dept_cc1920.png",
+ggsave("dept_cc1920_sa.png",
       plot = last_plot(), path = "shiny/")
 
-saveRDS(dept_cc1920, file="dept_cc1920.Rds")
+write_rds(dept_cc1920, "top_10_depts_c.rds")
 
 ```
 
@@ -480,5 +482,9 @@ cc_mean_growth_3y %>%
          fill = "Department")+
     xlab("")+
     ylab("Courses Added")
+```
+
+
+```{r}
 ```
 

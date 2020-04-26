@@ -18,9 +18,15 @@ library(dplyr)
 library(tidyverse)
 library(readr)
 library(tidyverse)
+library(gtable)
 
 
 #These libraries are neccessary 
+
+top_10_depts_e <- read_rds("top_10_depts_e.rds")
+top_10_depts_c <- read_rds("top_10_depts_c.rds")
+top_10_courses <- read_rds("top_10_courses.rds")
+fat_stack_plot <- read_rds("big_10_plot.rds")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(theme = shinytheme("flatly"),
@@ -86,4 +92,93 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                  mainPanel(
                                      plotOutput("Biggest_Departments")) 
                              ),     
-                    )))
+                    ),
+                    
+                    tabPanel("Top 10 Courses",
+                             #sidebar 
+                             sidebarLayout(
+                                 sidebarPanel(
+                                     
+                                     # different options 
+                                     selectInput(
+                                         inputId = "input_2",
+                                         label = "Top 10 Courses",
+                                         choices = c(
+                                             "By the Numbers" = "By the Numbers",
+                                             "% of Total Enrollments" = "% of Total Enrollments"
+                                         )
+                                     )
+                                 ),
+                                 
+                                 mainPanel(
+                                     plotOutput("Top_10_Courses")) 
+                             ),     
+                    )
+                    ))
+
+server <- function(input, output) {
+    output$Biggest_Departments <- renderPlot({
+        if(input$input_1 == "By Total Enrollments in Courses") {
+           top_10_depts_e %>%
+                arrange(desc(dept_enrollments))%>%
+                slice(1:10)%>%
+                ggplot(aes(x = course_department, y = dept_enrollments, fill = course_department))+
+                geom_bar(stat = "identity")+
+                scale_x_discrete()+
+                theme(axis.text.x = element_text(angle = 70, hjust = 1))+
+                labs(title = "Total Enrollments in Top 10 Departments", fill = "Department")+
+                xlab("")+
+                ylab("Total Enrollments")
+        }
+        else{
+            top_10_depts_c %>%
+                arrange(desc(course_count))%>%
+                slice(1:10)%>%
+                ggplot(aes(course_department, course_count, fill = course_department))+
+                geom_bar(stat = "identity")+
+                geom_text(aes(label=course_count), position=position_dodge(width=0.9), vjust=-0.25)+
+                scale_x_discrete()+
+                theme(axis.text.x = element_text(angle = 70, hjust = 1))+
+                labs(title = "Academic Departments with Most Courses", fill = "Department")+
+                xlab("")+
+                ylab("Total Courses")
+        }
+    })
+    
+    output$Top_10_Courses <- renderPlot({
+        if(input$input_2 == "By the Numbers") {
+         #DATA TOWN BAYBEEEEE
+            top_10_courses %>%
+                ggplot(aes(course_name, u_grad, fill = course_name))+
+                geom_bar(stat = "identity")+
+                geom_text(aes(label=u_grad), position=position_dodge(width=0.9), vjust=-0.25)+
+                scale_x_discrete()+
+                theme(axis.text.x = element_text(angle = 70, hjust = 1))+
+                labs(title = "Top 10 Courses by Undergrad Enrollment", fill = "Course Name")+
+                xlab("")+
+                ylab("Total Enrollments")
+                
+            
+        }
+        else{
+            fat_stack_plot%>%
+                ggplot(aes(x = 1, y = u_grad, fill = big_10))+
+                geom_bar(position = "stack", stat = "identity")+
+                scale_x_discrete()+
+                annotate("text", x = 1, y = 2400, label = "9%")+
+                annotate("text", x = 1, y = 27000, label = "91%")+
+                xlab("")+
+                ylab("Total Students")+
+                labs(title = "% of Course Enrollments during AY 19-20", 
+                     fill = "Big 10 Class")+
+                theme_classic()
+        }
+    })
+    
+    }
+
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+
+

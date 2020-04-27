@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 
+#YO! DO NOT TRY TO KNIT THIS! IT IS A WELL-LABELED SCRAPBOOK ESSENTIALLY. REGRESSION AT THE END.
 
 library(broom)
 library(dplyr)
@@ -94,9 +95,10 @@ write_rds(top_10_ay_1920, "top_10_courses.rds")
 
 ```
 
-ADDITIONAL THINGS IT WOULD BE INTERESTING TO DO: FIND AVERAGE COURSE SIZE
+
 
 ```{r AVERAGE COURSE SIZE}
+# What is the average course size for a class in AY 19-20
 ay_1920 %>%
   summarize(mean_class_size = mean(u_grad))
 
@@ -148,7 +150,10 @@ big_10_plot <- ay_1920 %>%
 
 
 
-big_10_plot_sa <- big_10_plot %>%
+ # GGPLOTTING ALL ENROLLMENTS WITH % OF ENROLLMENTS THAT FALL INTO BIG 10 FILLED
+  
+  big_10_plot %>%
+  filter(u_grad > 0)%>%
   ggplot(aes(x = 1, y = u_grad, fill = big_10))+
   geom_bar(position = "stack", stat = "identity")+
   scale_x_discrete()+
@@ -160,11 +165,7 @@ annotate("text", x = 1, y = 27000, label = "91%")+
        fill = "Big 10 Class")+
   theme_fivethirtyeight()
   
-# saving image to print 
 
-ggsave("big_10_plot_sa.png",
-      plot = last_plot(), path = "shiny/")
-  
 # saving the rds to print 
 saveRDS(big_10_plot, file="big_10_plot.Rds")
   
@@ -222,12 +223,15 @@ depts_ranked_ay1920 %>%
   xlab("")+
   ylab("Total Enrollments")
 
-write_rds(depts_ranked_ay1920, "top_10_depts_e.rds")
+write_rds(depts_ranked_ay1920, "shiny/top_10_depts_e.rds")
 
 ```
 
 ```{r SHINY APP ENROLLMENT 1920 PLOT}
 
+# this isnt crucial anymore, this is from when I wanted to
+# include the graphs as pngs in "renderImage" instead 
+# of plots in "renderPlots" 
 
 dray1920_plot_enrollment_sa <- depts_ranked_ay1920 %>%
   arrange(desc(dept_enrollments))%>%
@@ -250,7 +254,10 @@ ggsave("dray1920_plot_enrollment_sa.png",
 
 ```{r BIGGEST DEPTS BY COURSE COUNT GT}
 
+# here i create the biggest depts by course count 
+
 dept_cc1920 <- ay_1920 %>%
+ #filter(u_grad != 0)%>%
   group_by(course_department)%>%
   summarize(course_count = n())%>%
   filter(course_department != "Medical Sciences")
@@ -269,7 +276,7 @@ dept_cc1920 %>%
   )
 ```
 
-```{r GGPLOT}
+```{r GGPLOT COURSE COUNT DEPT}
 
 dept_cc1920_sa <- dept_cc1920 %>%
   arrange(desc(course_count))%>%
@@ -286,7 +293,7 @@ dept_cc1920_sa <- dept_cc1920 %>%
 ggsave("dept_cc1920_sa.png",
       plot = last_plot(), path = "shiny/")
 
-write_rds(dept_cc1920, "top_10_depts_c.rds")
+write_rds(dept_cc1920, "shiny/top_10_depts_c.rds")
 
 ```
 
@@ -391,17 +398,21 @@ mean_growth_3y %>%
          fill = "Department")+
     xlab("")+
     ylab("% growth")
+
+write_rds(mean_growth_3y, "top10dept_eg.rds")
 ```
 
-Slope then confidence in slope
 
-**YO HOW DO I DO THIS**
-```{r}
+```{r PIVOT SCRAP CHUNK}
+
+# random pivot workbook - disregard 
+
 longer_depts_17_to_20 <- depts_17_to20 %>%
   na.omit()%>%
   pivot_longer(values_to = "enrollment",
                names_prefix = "dept_enrollemnts",
-               cols = 2:4)
+               cols = 2:4)%>%
+  rename(year =)
 
 
 longer_depts_17_to_20 %>%
@@ -416,12 +427,14 @@ lm(enrollment~course_department, data = .) %>%
 
 ```{r FASTEST GROWING LINE PLOT}
 # USE DEPTS 17 TO 20 TO PIVOT LONGER AND FIRE IN AN ELITE LINE GRAPH
+
 ```
 
 FASTEST GROWING BY COURSE COUNT 
 
 
 ```{r 3Y Dept Course Count }
+
 # CREATE DEPT COURSE COUNT 
 dept_cc1819 <- ay_1819 %>%
   group_by(course_department)%>%
@@ -482,9 +495,347 @@ cc_mean_growth_3y %>%
          fill = "Department")+
     xlab("")+
     ylab("Courses Added")
+
+write_rds(cc_mean_growth_3y, "top10dept_cg.rds")
 ```
 
 
 ```{r}
+
+dept_types_1920<- ay_1920%>%
+  mutate(course_department = as.factor(course_department)) %>%
+mutate(dept_group = case_when(course_department == "African & African Amer Studies" ~ "Social Science",
+                              course_department == "Art, Film, and Visual Studies" ~ "Humanities",
+  course_department == "Celtic Languages & Literatures" ~ "Humanities",
+  course_department == "Classics, The" ~ "Humanities",
+  course_department == "Comparative Literature" ~ "Humanities",
+  course_department == "East Asian Langs & Civ" ~ "Humanities",
+  course_department == "English" ~ "Humanities",
+  course_department == "Folklore & Mythology" ~ "Humanities",
+  course_department == "Germanic Languages & Lit" ~ "Humanities",
+  course_department == "History & Literature" ~ "Humanities",
+  course_department == "History of Art & Architecture" ~ "Humanities",
+  course_department == "Linguistics" ~ "Humanities",
+  course_department == "Music" ~ "Humanities",
+  course_department == "Near Eastern Languages & Civ" ~ "Humanities",
+  course_department == "Philosophy" ~ "Humanities",
+  course_department == "Religion, The Study of" ~ "Humanities",
+  course_department == "Romance Languages & Lit" ~ "Humanities",
+  course_department == "Slavic Languages & Literatures" ~ "Humanities",
+  course_department == "South Asian Studies" ~ "Humanities",
+  course_department == "Special Concentrations" ~ "Humanities",
+  course_department == "Theater, Dance & Media" ~ "Humanities",
+   course_department == "Anthropology" ~ "Social Science",
+   course_department == "Economics" ~ "Social Science",
+   course_department == "Government" ~ "Social Science",
+   course_department == "History" ~ "Social Science",
+   course_department == "History and Science" ~ "Social Science",
+   course_department == "Psychology" ~ "Social Science",
+   course_department == "Social Studies" ~ "Social Science",
+   course_department == "Sociology" ~ "Social Science",
+   course_department == "Women, Gender & Sexuality" ~ "Social Science",
+  course_department == "Applied Mathematics" ~ "STEM",
+  course_department == "Biomedical Engineering" ~ "STEM",
+  course_department == "Computer Science" ~ "STEM",
+  course_department == "Electrical Engineering" ~ "STEM",
+  course_department == "Engineering Sciences" ~ "STEM",
+  course_department == "Environmental Sci and Engineer" ~ "STEM",
+  course_department == "Astronomy" ~ "STEM",
+  course_department == "Chemical & Physical Biology" ~ "STEM",
+  course_department == "Chemistry" ~ "STEM",
+  course_department == "Chemical Biology" ~ "STEM",
+  course_department == "Chemistry & Chemical Biology" ~ "STEM",
+  course_department == "Envi Science & Public Policy" ~ "STEM",
+  course_department == "Human Evolutionary Biology" ~ "STEM",
+  course_department == "Mathematics" ~ "STEM",
+  course_department == "Molecular and Cellular Biology" ~ "STEM",
+  course_department == "Neuroscience" ~ "STEM",
+  course_department == "Physics" ~ "STEM",
+  course_department == "Psychology" ~ "STEM",
+  course_department == "Statistics" ~ "STEM")
+                              )
+  
+
+concentration_cat_1920e <- dept_types_1920 %>%
+  na.omit()%>%
+  group_by(dept_group)%>%
+  summarize(cat_enrollment = sum(u_grad))
+
+concentration_cat_1920e %>%
+  ggplot(aes(1, cat_enrollment, fill = dept_group))+
+  geom_bar(position = "stack", stat = "identity")+
+  scale_x_discrete()+
+  annotate("text", x = 1, y = 6530, label = "36%")+
+annotate("text", x = 1, y = 21000, label = "37%")+
+  annotate("text", x = 1, y = 32000, label = "27%")+
+  xlab("")+
+  ylab("Total Enrollments")+
+  labs(title = "Distribution of Enrollments Across The 3 Department Categories", 
+       fill = "Department Category")
+
+write_rds(concentration_cat_1920e, "conc_cat_1920e.rds")
+# things to investigate: total enrollments
+# stack dat bar BAYBEEEE
+# run growth calculations 
+
+```
+
+```{r}
+# making 18-19 for department categories by enrollment 
+dept_types_1819<- ay_1819%>%
+  mutate(course_department = as.factor(course_department)) %>%
+mutate(dept_group = case_when(course_department == "African & African Amer Studies" ~ "Social Science",
+                              course_department == "Art, Film, and Visual Studies" ~ "Humanities",
+  course_department == "Celtic Languages & Literatures" ~ "Humanities",
+  course_department == "Classics, The" ~ "Humanities",
+  course_department == "Comparative Literature" ~ "Humanities",
+  course_department == "East Asian Langs & Civ" ~ "Humanities",
+  course_department == "English" ~ "Humanities",
+  course_department == "Folklore & Mythology" ~ "Humanities",
+  course_department == "Germanic Languages & Lit" ~ "Humanities",
+  course_department == "History & Literature" ~ "Humanities",
+  course_department == "History of Art & Architecture" ~ "Humanities",
+  course_department == "Linguistics" ~ "Humanities",
+  course_department == "Music" ~ "Humanities",
+  course_department == "Near Eastern Languages & Civ" ~ "Humanities",
+  course_department == "Philosophy" ~ "Humanities",
+  course_department == "Religion, The Study of" ~ "Humanities",
+  course_department == "Romance Languages & Lit" ~ "Humanities",
+  course_department == "Slavic Languages & Literatures" ~ "Humanities",
+  course_department == "South Asian Studies" ~ "Humanities",
+  course_department == "Special Concentrations" ~ "Humanities",
+  course_department == "Theater, Dance & Media" ~ "Humanities",
+   course_department == "Anthropology" ~ "Social Science",
+   course_department == "Economics" ~ "Social Science",
+   course_department == "Government" ~ "Social Science",
+   course_department == "History" ~ "Social Science",
+   course_department == "History and Science" ~ "Social Science",
+   course_department == "Psychology" ~ "Social Science",
+   course_department == "Social Studies" ~ "Social Science",
+   course_department == "Sociology" ~ "Social Science",
+   course_department == "Women, Gender & Sexuality" ~ "Social Science",
+  course_department == "Applied Mathematics" ~ "STEM",
+  course_department == "Biomedical Engineering" ~ "STEM",
+  course_department == "Computer Science" ~ "STEM",
+  course_department == "Electrical Engineering" ~ "STEM",
+  course_department == "Engineering Sciences" ~ "STEM",
+  course_department == "Environmental Sci and Engineer" ~ "STEM",
+  course_department == "Astronomy" ~ "STEM",
+  course_department == "Chemical & Physical Biology" ~ "STEM",
+  course_department == "Chemistry" ~ "STEM",
+  course_department == "Chemical Biology" ~ "STEM",
+  course_department == "Chemistry & Chemical Biology" ~ "STEM",
+  course_department == "Envi Science & Public Policy" ~ "STEM",
+  course_department == "Human Evolutionary Biology" ~ "STEM",
+  course_department == "Mathematics" ~ "STEM",
+  course_department == "Molecular and Cellular Biology" ~ "STEM",
+  course_department == "Neuroscience" ~ "STEM",
+  course_department == "Physics" ~ "STEM",
+  course_department == "Psychology" ~ "STEM",
+  course_department == "Statistics" ~ "STEM")
+                              )
+  
+
+concentration_cat_1819e <- dept_types_1819 %>%
+  na.omit()%>%
+  group_by(dept_group)%>%
+  summarize(cat_enrollment = sum(u_grad))
+
+
+```
+
+
+```{r}
+# making 17-18 for department categories by enrollment 
+
+dept_types_1718<- ay_1718%>%
+  mutate(course_department = as.factor(course_department)) %>%
+mutate(dept_group = case_when(course_department == "African & African Amer Studies" ~ "Social Science",
+                              course_department == "Art, Film, and Visual Studies" ~ "Humanities",
+  course_department == "Celtic Languages & Literatures" ~ "Humanities",
+  course_department == "Classics, The" ~ "Humanities",
+  course_department == "Comparative Literature" ~ "Humanities",
+  course_department == "East Asian Langs & Civ" ~ "Humanities",
+  course_department == "English" ~ "Humanities",
+  course_department == "Folklore & Mythology" ~ "Humanities",
+  course_department == "Germanic Languages & Lit" ~ "Humanities",
+  course_department == "History & Literature" ~ "Humanities",
+  course_department == "History of Art & Architecture" ~ "Humanities",
+  course_department == "Linguistics" ~ "Humanities",
+  course_department == "Music" ~ "Humanities",
+  course_department == "Near Eastern Languages & Civ" ~ "Humanities",
+  course_department == "Philosophy" ~ "Humanities",
+  course_department == "Religion, The Study of" ~ "Humanities",
+  course_department == "Romance Languages & Lit" ~ "Humanities",
+  course_department == "Slavic Languages & Literatures" ~ "Humanities",
+  course_department == "South Asian Studies" ~ "Humanities",
+  course_department == "Special Concentrations" ~ "Humanities",
+  course_department == "Theater, Dance & Media" ~ "Humanities",
+   course_department == "Anthropology" ~ "Social Science",
+   course_department == "Economics" ~ "Social Science",
+   course_department == "Government" ~ "Social Science",
+   course_department == "History" ~ "Social Science",
+   course_department == "History and Science" ~ "Social Science",
+   course_department == "Psychology" ~ "Social Science",
+   course_department == "Social Studies" ~ "Social Science",
+   course_department == "Sociology" ~ "Social Science",
+   course_department == "Women, Gender & Sexuality" ~ "Social Science",
+  course_department == "Applied Mathematics" ~ "STEM",
+  course_department == "Biomedical Engineering" ~ "STEM",
+  course_department == "Computer Science" ~ "STEM",
+  course_department == "Electrical Engineering" ~ "STEM",
+  course_department == "Engineering Sciences" ~ "STEM",
+  course_department == "Environmental Sci and Engineer" ~ "STEM",
+  course_department == "Astronomy" ~ "STEM",
+  course_department == "Chemical & Physical Biology" ~ "STEM",
+  course_department == "Chemistry" ~ "STEM",
+  course_department == "Chemical Biology" ~ "STEM",
+  course_department == "Chemistry & Chemical Biology" ~ "STEM",
+  course_department == "Envi Science & Public Policy" ~ "STEM",
+  course_department == "Human Evolutionary Biology" ~ "STEM",
+  course_department == "Mathematics" ~ "STEM",
+  course_department == "Molecular and Cellular Biology" ~ "STEM",
+  course_department == "Neuroscience" ~ "STEM",
+  course_department == "Physics" ~ "STEM",
+  course_department == "Psychology" ~ "STEM",
+  course_department == "Statistics" ~ "STEM")
+                              )
+  
+
+concentration_cat_1718e <- dept_types_1718 %>%
+  na.omit()%>%
+  group_by(dept_group)%>%
+  summarize(cat_enrollment = sum(u_grad))
+
+```
+
+
+```{r}
+# joining conc_cat_e years 
+
+conc_cat_18_to_20 <- concentration_cat_1819e %>%
+  full_join(concentration_cat_1920e, by = "dept_group", suffix = c("18", "19"))
+
+conc_cat_17_to_20e <- concentration_cat_1718e %>%
+  full_join(conc_cat_18_to_20, by = "dept_group")
+
+```
+
+```{r}
+# pivoting 
+
+
+
+long_cc17to20e <- conc_cat_17_to_20e %>%
+ pivot_longer(
+   values_to = "enrollment",
+   cols = 2:4
+ ) %>%
+  mutate(year = case_when(name == "cat_enrollment" ~ 1,
+                name == "cat_enrollment18" ~ 2,
+                name == "cat_enrollment19" ~ 3 )) %>%
+  mutate(dept_group = as.factor(dept_group))
+
+write_rds(long_cc17to20e, "long_cc17to20e")
+
+long_cc17to20e %>%
+ggplot(aes(year, enrollment, color = dept_group))+
+  geom_smooth(method = "glm", se = FALSE)+
+  geom_point()
+```
+
+
+```{r}
+# Break through - will run regression on enrollments and course count by department
+longer_depts_17_to_20e <- depts_17_to20 %>%
+  na.omit()%>%
+  pivot_longer(values_to = "enrollment",
+               names_prefix = "dept_enrollemnts",
+               cols = 2:4)%>%
+    mutate(year = case_when(name == "dept_enrollments17" ~ 1,
+                name == "dept_enrollments18" ~ 2,
+                name == "dept_enrollments19" ~ 3 ))%>%
+    select(-name)
+
+# creating new pivot for course count but cleaning
+longer_dept_cc1720<- dept_cc17_to_20 %>%
+  pivot_longer(values_to = "courses",
+               names_prefix = "course_count",
+               cols = 2:4) %>%
+      mutate(year = case_when(name == "17" ~ 1,
+                name == "18" ~ 2,
+                name == "19" ~ 3 ))%>%
+    select(-name)            
+  
+
+# JOIN COMPLETE SUCCESSFULLY 
+
+cc_and_e1720 <- longer_depts_17_to_20e%>%
+  full_join(longer_dept_cc1720, by = c("year", "course_department"))%>%
+  na.omit() %>%
+  mutate(dept_group = case_when(course_department == "African & African Amer Studies" ~ "Social Science",
+                              course_department == "Art, Film, and Visual Studies" ~ "Humanities",
+  course_department == "Celtic Languages & Literatures" ~ "Humanities",
+  course_department == "Classics, The" ~ "Humanities",
+  course_department == "Comparative Literature" ~ "Humanities",
+  course_department == "East Asian Langs & Civ" ~ "Humanities",
+  course_department == "English" ~ "Humanities",
+  course_department == "Folklore & Mythology" ~ "Humanities",
+  course_department == "Germanic Languages & Lit" ~ "Humanities",
+  course_department == "History & Literature" ~ "Humanities",
+  course_department == "History of Art & Architecture" ~ "Humanities",
+  course_department == "Linguistics" ~ "Humanities",
+  course_department == "Music" ~ "Humanities",
+  course_department == "Near Eastern Languages & Civ" ~ "Humanities",
+  course_department == "Philosophy" ~ "Humanities",
+  course_department == "Religion, The Study of" ~ "Humanities",
+  course_department == "Romance Languages & Lit" ~ "Humanities",
+  course_department == "Slavic Languages & Literatures" ~ "Humanities",
+  course_department == "South Asian Studies" ~ "Humanities",
+  course_department == "Special Concentrations" ~ "Humanities",
+  course_department == "Theater, Dance & Media" ~ "Humanities",
+   course_department == "Anthropology" ~ "Social Science",
+   course_department == "Economics" ~ "Social Science",
+   course_department == "Government" ~ "Social Science",
+   course_department == "History" ~ "Social Science",
+   course_department == "History and Science" ~ "Social Science",
+   course_department == "Psychology" ~ "Social Science",
+   course_department == "Social Studies" ~ "Social Science",
+   course_department == "Sociology" ~ "Social Science",
+   course_department == "Women, Gender & Sexuality" ~ "Social Science",
+  course_department == "Applied Mathematics" ~ "STEM",
+  course_department == "Biomedical Engineering" ~ "STEM",
+  course_department == "Computer Science" ~ "STEM",
+  course_department == "Electrical Engineering" ~ "STEM",
+  course_department == "Engineering Sciences" ~ "STEM",
+  course_department == "Environmental Sci and Engineer" ~ "STEM",
+  course_department == "Astronomy" ~ "STEM",
+  course_department == "Chemical & Physical Biology" ~ "STEM",
+  course_department == "Chemistry" ~ "STEM",
+  course_department == "Chemical Biology" ~ "STEM",
+  course_department == "Chemistry & Chemical Biology" ~ "STEM",
+  course_department == "Envi Science & Public Policy" ~ "STEM",
+  course_department == "Human Evolutionary Biology" ~ "STEM",
+  course_department == "Mathematics" ~ "STEM",
+  course_department == "Molecular and Cellular Biology" ~ "STEM",
+  course_department == "Neuroscience" ~ "STEM",
+  course_department == "Physics" ~ "STEM",
+  course_department == "Psychology" ~ "STEM",
+  course_department == "Statistics" ~ "STEM")
+                              )
+  
+
+
+
+cc_and_e1720 %>%
+  group_by(year)%>%
+glm(courses~enrollment, data = .) %>%
+  tidy(conf.int = TRUE)%>%
+  gt()
+
+
+
+
+
 ```
 

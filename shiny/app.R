@@ -192,7 +192,7 @@ tabPanel("Fastest Growing Departments",
                              plotOutput("Departments_Stacked"),
                              h3("The Data:"),
                              
-                             h2("Here, we see a total shuffling. While STEM and Social Sciences have the most students enrolled in their courses, humanities has by far a larger array of courses offered.")
+                             h5("Here, we see a total shuffling. While STEM and Social Sciences have the most students enrolled in their courses, humanities has by far a larger array of courses offered.")
                            )
                 )
                 ),
@@ -211,11 +211,15 @@ tabPanel("Fastest Growing Departments",
       tabPanel("Conclusion and Questions for Further Discussion",
                mainPanel(
                  h3("Conclusion"),
-                 h4("This study is a first step in investigating Harvard’s academic set up. The key insights it offers are in the questions certain discrepancies raise. For example: why is there such a weak relationship between courses offered by departments and enrollments in those departments? Areas for further study include course load of professors by department, the relationship between a professor's course and/or enrollment load and that professor's compensation, the relationship between professor department and professor compensation, and many more such as..."),
+                 h4("This study is a first step in investigating Harvard’s academic set up. The key insights it offers are in the questions certain discrepancies raise, such as..."),
                  h5("Why is STEM the most enrolled while humanities has the most courses?"),
                  h5("Ethnicity Migration and Rights Growth: These topics have all risen to the forefront of the American Conscience as Donald Trump has made controversial social and foreign policy decisions. Might there be a correlation between increased media attention on these issues and student attention?"),
                  h5("Enrollments & Courses as indicators of “interest”: Which is the better indicator of interest? Are the most enrolled classes also requirements, or are they electives?"),
-                 h5("Why do departments add courses?")
+                 h5("Why do departments add courses?"),
+                 h5("What is the relationship between course satisfaction and course difficulty?"),
+                 h5("What is the relationship between professor compensation and total students taught?"),
+                 
+                 h4("...and many many more!")
                )
       )
 )

@@ -41,6 +41,7 @@ big_10_plot <- read_rds("big_10_plot.Rds")
 top10dept_eg <- read_rds("top10dept_eg.rds")
 top10dept_cg <- read_rds("top10dept_cg.rds")
 conc_cat_1920e<- read_rds("conc_cat_1920e.rds")
+courses_cat1920 <- read_rds("courses_cat1920.rds")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(theme = shinytheme("flatly"),
@@ -56,10 +57,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
 
 Interestingly, the departments with the highest enrollments are typically not the departments with the highest amount of courses offered. STEM departments typically have the higher enrollments, but they also have fewer courses offered by their departments."),
 
-h5("After running a regression on course count and enrollments (formula was courses ~ enrollment), it was determined that the relationship was 0.044. This indicates the relationship between courses offered by a department and enrollments in those departments is only vaguely positive."),
-
-h2("Conclusion"),
-h5("This study is a first step in investigating Harvard’s academic set up. The key insights it offers are in the questions certain discrepancies raise. For example: why is there such a weak relationship between courses offered by departments and enrollments in those departments? Areas for further study include course load of professors by department, the relationship between a professor's course and/or enrollment load and that professor's compensation, the relationship between professor department and professor compensation, and many more."),
+h5("After running a regression on course count and enrollments (formula was courses ~ enrollment), it was determined that the relationship was 0.044. This indicates the relationship between courses offered by a department and enrollments in those departments is only vaguely positive.")
                              )),
                   
                   tabPanel("About",
@@ -93,7 +91,32 @@ h5("This study is a first step in investigating Harvard’s academic set up. The
                              h2("Source Code"),
                              h5("The source code for this Shiny App can be found at my", a("GitHub", href="https://github.com/jasonbrose"))
                            )),
-              
+tabPanel("Top 10 Courses",
+         #sidebar 
+         sidebarLayout(
+           sidebarPanel(
+             
+             # different options 
+             selectInput(
+               inputId = "input_2",
+               label = "Top 10 Courses",
+               choices = c(
+                 "By the Numbers" = "By the Numbers",
+                 "% of Total Enrollments" = "% of Total Enrollments"
+               )
+             )
+           ),
+           
+           mainPanel(
+             plotOutput("Top_10_Courses"),
+             h3("The Data:"),
+             
+             h5("Examining the biggest courses by total undergraduate enrollment yields an interesting insight. 100% of them are STEM courses!"),
+             
+             h5("For the academic year of 2019-2020, almost 10% of all enrollments in any Harvard University course were in one of the top 10 largest courses.")
+           ) 
+         )    
+),
                   tabPanel("Biggest Departments",
                            #sidebar 
                            sidebarLayout(
@@ -111,61 +134,93 @@ h5("This study is a first step in investigating Harvard’s academic set up. The
                              ),
                              
                              mainPanel(
-                               plotOutput("Biggest_Departments")) 
-                           ),     
-                  ),
-                  
-                  
-                  
-                  tabPanel("Top 10 Courses",
-                           #sidebar 
-                           sidebarLayout(
-                             sidebarPanel(
+                               plotOutput("Biggest_Departments"), 
+                               h3("The Data"),
                                
-                               # different options 
-                               selectInput(
-                                 inputId = "input_2",
-                                 label = "Top 10 Courses",
-                                 choices = c(
-                                   "By the Numbers" = "By the Numbers",
-                                   "% of Total Enrollments" = "% of Total Enrollments"
-                                 )
-                               )
-                             ),
-                             
-                             mainPanel(
-                               plotOutput("Top_10_Courses")) 
-                           ),     
+                               h5("Examining the biggest departments by total enrollments in courses yields interesting insights. STEM accounts for 50% of the departments with the most enrollments, while humanities accounts for 30%, and social sciences comprise 20%."),
+                               
+                               h5("Interestingly, these trends are not consistent when examining the largest courses by total courses offered. Through this lens, humanities departments account for 60% of the largest departments, followed by STEM and social sciences at 20% respectively."))
+                           )     
                   ),
+tabPanel("Fastest Growing Departments",
+         #sidebar 
+         sidebarLayout(
+           sidebarPanel(
+             
+             # different options 
+             selectInput(
+               inputId = "input_3",
+               label = "Fastest Growing Departments",
+               choices = c(
+                 "By Average Annual % Increase in Enrollments in Courses Offered by Department" = "By Average Annual % Increase in Enrollments in Courses Offered by Department",
+                 "By Average Annual Increase in Courses Offered By Department" = "By Average Annual % Increase in Courses Offered By Department"
+               )
+             )
+           ),
+           
+           mainPanel(
+             plotOutput("Dept_Growth"),
+             h3("The Data:"),
+             
+             h5("Examining the fastest growing departments by average annual % increase in enrollments in courses across three years evinces several trends."), 
+             
+             h5("First, Ethnicity, Migration, and Rights is the fastest growing department by far. Its growth rate is twice as large as the second fastest growing department, Celtic Languages & Literatures. Second, 50% of the fastest growing departments by enrollments are humanities departments, while 30% are STEM, and the remaining 20% are social sciences."),
+             
+             h5("Examining the fastest growing departments by average annual increase in courses offered across three years also yields interesting insights."),
+             
+             h5("We see about an even split between STEM and humanities. 40% of the fastest growing departments by courses added were STEM, and 40% were humanities. Social sciences only had one department make it. Interestingly, general education, which I have not categorized as STEM, Humanities, or Social Sciences, has been growing extremely quickly as well.")
+             ) 
+         )     
+),
+                  
                   
                   tabPanel("Department Categories",
-                           mainPanel (
-                             plotOutput("Departments_Stacked")
-                           )),
-                  
-                  
-                  tabPanel("Fastest Growing Departments",
-                           #sidebar 
                            sidebarLayout(
                              sidebarPanel(
                                
                                # different options 
                                selectInput(
-                                 inputId = "input_3",
-                                 label = "Fastest Growing Departments",
+                                 inputId = "input_4",
+                                 label = "Department Categories",
                                  choices = c(
-                                   "By Average Annual % Increase in Enrollments in Courses Offered by Department" = "By Average Annual % Increase in Enrollments in Courses Offered by Department",
-                                   "By Average Annual Increase in Courses Offered By Department" = "By Average Annual % Increase in Courses Offered By Department"
+                                   "By 2019-2020 Enrollments" = "By 2019-2020 Enrollments",
+                                   "By 2019-2020 Courses Offered" = "By 2019-2020 Courses Offered"
                                  )
                                )
                              ),
+                           mainPanel(
+                             plotOutput("Departments_Stacked"),
+                             h3("The Data:"),
                              
-                             mainPanel(
-                               plotOutput("Dept_Growth")) 
-                           ),     
-                  )
-                  
-                ))
+                             h2("Here, we see a total shuffling. While STEM and Social Sciences have the most students enrolled in their courses, humanities has by far a larger array of courses offered.")
+                           )
+                )
+                ),
+
+      tabPanel("Regression",
+               mainPanel(
+                 
+                 h2("Regression"),
+                 h3("Formula = glm(courses~enrollment)"),
+                 h5("The coefficient is 0.044. This indicates a very weak positive relationship between courses offered by a department and total enrollments in that department"),
+                 plotOutput("regression")
+        
+               )
+               ),
+
+      tabPanel("Conclusion and Questions for Further Discussion",
+               mainPanel(
+                 h3("Conclusion"),
+                 h4("This study is a first step in investigating Harvard’s academic set up. The key insights it offers are in the questions certain discrepancies raise. For example: why is there such a weak relationship between courses offered by departments and enrollments in those departments? Areas for further study include course load of professors by department, the relationship between a professor's course and/or enrollment load and that professor's compensation, the relationship between professor department and professor compensation, and many more such as..."),
+                 h5("Why is STEM the most enrolled while humanities has the most courses?"),
+                 h5("Ethnicity Migration and Rights Growth: These topics have all risen to the forefront of the American Conscience as Donald Trump has made controversial social and foreign policy decisions. Might there be a correlation between increased media attention on these issues and student attention?"),
+                 h5("Enrollments & Courses as indicators of “interest”: Which is the better indicator of interest? Are the most enrolled classes also requirements, or are they electives?"),
+                 h5("Why do departments add courses?")
+               )
+      )
+)
+)
+
 
 server <- function(input, output) {
   output$Biggest_Departments <- renderPlot({
@@ -231,6 +286,7 @@ server <- function(input, output) {
     if(input$input_3 == "By Average Annual % Increase in Enrollments in Courses Offered by Department") {
       top10dept_eg %>%
         arrange(desc(mean_growth_pct))%>%
+        filter(course_department != "Astronomy")%>%
         slice(1:10)%>%
         ggplot(aes(course_department, mean_growth_pct, fill = course_department))+
         geom_bar(stat = "identity")+
@@ -261,7 +317,8 @@ server <- function(input, output) {
   })
   
   output$Departments_Stacked <- renderPlot({
-    conc_cat_1920e %>%
+    if(input$input_4 == "By 2019-2020 Enrollments"){
+      conc_cat_1920e %>%
       ggplot(aes(1, cat_enrollment, fill = dept_group))+
       geom_bar(position = "stack", stat = "identity")+
       scale_x_discrete()+
@@ -272,7 +329,26 @@ server <- function(input, output) {
       ylab("Total Enrollments")+
       labs(title = "Distribution of Enrollments Across The 3 Department Categories", 
            fill = "Department Category")
-  })
+  }
+    else{
+      courses_cat1920%>%
+        ggplot(aes(1, course_count, fill = dept_group))+
+        geom_bar(position = "stack", stat = "identity")+
+        scale_x_discrete()+
+        annotate("text", x = 1, y = 407, label = "23%")+
+        annotate("text", x = 1, y = 1394, label = "32%")+
+        annotate("text", x = 1, y = 2856, label = "45%")+
+        xlab("")+
+        ylab("Total Courses")+
+        labs(title = "Course Count Distribution Across Three Department Groups", 
+             fill = "Department Category")
+    }
+    })
+  
+  output$regression <- renderImage({
+    list(src = "regression_gt_final_proj.png", width = 700)
+  }, deleteFile = FALSE)
+  
   
 }
 

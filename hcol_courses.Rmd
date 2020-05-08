@@ -824,18 +824,37 @@ cc_and_e1720 <- longer_depts_17_to_20e%>%
   course_department == "Statistics" ~ "STEM")
                               )
   
+# creating a table for count count by department group
+courses_cat1920 <- cc_and_e1720 %>%
+  na.omit()%>%
+  group_by(dept_group)%>%
+  filter(year == 3)%>%
+  summarize(course_count = sum(courses))
 
+courses_cat1920%>%
+  ggplot(aes(1, course_count, fill = dept_group))+
+  geom_bar(position = "stack", stat = "identity")+
+  scale_x_discrete()+
+  annotate("text", x = 1, y = 407, label = "23%")+
+annotate("text", x = 1, y = 1394, label = "32%")+
+  annotate("text", x = 1, y = 2856, label = "45%")+
+  xlab("")+
+  ylab("Total Courses")+
+  labs(title = "Course Count Distribution Across Three Department Groups", 
+       fill = "Department Category")
 
+write_rds(courses_cat1920, "courses_cat1920.rds")
+  
 
+```
+
+```{r}
+# REGRESSION  
 cc_and_e1720 %>%
   group_by(year)%>%
 glm(courses~enrollment, data = .) %>%
   tidy(conf.int = TRUE)%>%
+  select(term, estimate, conf.low, conf.high)%>%
   gt()
-
-
-
-
-
 ```
 
